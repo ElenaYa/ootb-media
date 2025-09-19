@@ -362,26 +362,7 @@ function addMicroInteractions() {
         });
     });
 
-    // Card tilt effect on mouse move
-    document.querySelectorAll('.service-card, .case-card, .industry-detail-card').forEach(card => {
-        card.addEventListener('mousemove', (e) => {
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-            
-            const rotateX = (y - centerY) / 10;
-            const rotateY = (centerX - x) / 10;
-            
-            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(10px)`;
-        });
-        
-        card.addEventListener('mouseleave', () => {
-            card.style.transform = '';
-        });
-    });
+    // Hover tilt effect removed per request
 }
 
 // Initialize micro-interactions after DOM is loaded
@@ -437,10 +418,10 @@ function addScrollToTop() {
     scrollBtn.className = 'scroll-to-top';
     scrollBtn.style.cssText = `
         position: fixed;
-        bottom: 2rem;
-        left: 2rem;
-        width: 50px;
-        height: 50px;
+        bottom: 4rem;
+        right: 1rem;
+        width: 40px;
+        height: 40px;
         background: var(--accent-green);
         color: white;
         border: none;
