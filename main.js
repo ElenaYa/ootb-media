@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initScrollAnimations();
     initNavbar();
     initCounterAnimations();
+    initTypingSubtitles();
     initCampaignBuilder();
     initContactForm();
     initIndustryInteractions();
@@ -26,12 +27,17 @@ function initScrollAnimations() {
                 if (entry.target.classList.contains('hero-stats')) {
                     animateCounters();
                 }
+
+                // Start typing when subtitle comes into view
+                if (entry.target.classList.contains('section-subtitle')) {
+                    startTypingSubtitle(entry.target);
+                }
             }
         });
     }, observerOptions);
 
-    // Observe all elements with reveal animations
-    document.querySelectorAll('.reveal-up').forEach(el => {
+    // Observe reveal elements and subtitles
+    document.querySelectorAll('.reveal-up, .reveal-left, .reveal-right, .section-subtitle').forEach(el => {
         observer.observe(el);
     });
 }
@@ -39,12 +45,39 @@ function initScrollAnimations() {
 // Navbar scroll effects
 function initNavbar() {
     const navbar = document.getElementById('mainNav');
-    
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 100) {
+    let lastScrollY = window.pageYOffset || document.documentElement.scrollTop;
+
+    const handleScroll = () => {
+        const currentY = window.pageYOffset || document.documentElement.scrollTop;
+
+        // Maintain existing shadow/background behavior
+        if (currentY > 100) {
             navbar.classList.add('scrolled');
         } else {
             navbar.classList.remove('scrolled');
+        }
+
+        // Desktop-only hide/show behavior
+        const isDesktop = window.innerWidth >= 992;
+        if (isDesktop) {
+            if (currentY > lastScrollY && currentY > 150) {
+                // scrolling down
+                navbar.classList.add('navbar-hidden');
+            } else {
+                // scrolling up
+                navbar.classList.remove('navbar-hidden');
+            }
+        } else {
+            navbar.classList.remove('navbar-hidden');
+        }
+
+        lastScrollY = currentY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', () => {
+        if (window.innerWidth < 992) {
+            navbar.classList.remove('navbar-hidden');
         }
     });
 }
@@ -88,6 +121,42 @@ function initCounterAnimations() {
             updateCounter();
         });
     };
+}
+
+// Animated typing for section subtitles
+function initTypingSubtitles() {
+    const subtitles = document.querySelectorAll('.section-subtitle');
+    subtitles.forEach((subtitle) => {
+        const fullText = (subtitle.textContent || '').trim();
+        if (!fullText || subtitle.dataset.typingPrepared === 'true') return;
+        subtitle.dataset.typingPrepared = 'true';
+        subtitle.dataset.fulltext = fullText;
+        subtitle.setAttribute('aria-label', fullText);
+        subtitle.textContent = '';
+    });
+}
+
+function startTypingSubtitle(el) {
+    if (!el || el.dataset.typed === 'true') return;
+    const text = el.dataset.fulltext || '';
+    if (!text) return;
+    if (el.dataset.typingStarted === 'true') return;
+    el.dataset.typingStarted = 'true';
+    el.classList.add('typing');
+
+    const typeSpeedMs = 20;
+    let i = 1;
+    const typeStep = () => {
+        if (i > text.length) {
+            el.classList.remove('typing');
+            el.dataset.typed = 'true';
+            return;
+        }
+        el.textContent = text.slice(0, i);
+        i += 1;
+        setTimeout(typeStep, typeSpeedMs);
+    };
+    typeStep();
 }
 
 // Campaign Builder Interactive Preview
@@ -499,3 +568,181 @@ const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matche
 if (prefersDarkMode) {
     document.body.classList.add('theme-preference-dark');
 }
+/* ------------------------------
+  Lightweight non-destructive swiper for Industries
+  - DOES NOT rewrap/move DOM nodes (preserves images)
+  - Uses existing Prev/Next buttons if present
+  - Adds drag-to-scroll and centered snapping
+--------------------------------*/
+(function initNativeSwiper() {
+    function $(sel, ctx=document) { return ctx.querySelector(sel); }
+    function $all(sel, ctx=document) { return Array.from(ctx.querySelectorAll(sel)); }
+  
+    function findContainer() {
+      return document.querySelector('.industries-snap') 
+          || document.querySelector('.industries-carousel')
+          || document.querySelector('#industries .industries-snap')
+          || document.querySelector('#industries .industries-carousel');
+    }
+  
+    function findButtons(container) {
+      // try common class names, fallbacks
+      return {
+        prev: container.querySelector('.swipe-prev') || document.querySelector('.swipe-prev') || document.querySelector('.swiper-button-prev') || document.querySelector('.swipe-prev-btn'),
+        next: container.querySelector('.swipe-next') || document.querySelector('.swipe-next') || document.querySelector('.swiper-button-next') || document.querySelector('.swipe-next-btn')
+      };
+    }
+  
+    function getSlides(container) {
+      // choose only element children that look like cards
+      const children = Array.from(container.children).filter(n => n.nodeType === 1);
+      // Filter out controls/pagination elements (common classes)
+      return children.filter(ch => !ch.classList.contains('swipe-controls') && !ch.classList.contains('swiper-pagination') && !ch.classList.contains('swiper-button-next') && !ch.classList.contains('swiper-button-prev'));
+    }
+  
+    function scrollToCenter(container, el, behavior = 'smooth') {
+      const containerRect = container.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      // center position relative to container
+      const elCenter = elRect.left + elRect.width/2;
+      const containerCenter = containerRect.left + container.clientWidth/2;
+      const delta = elCenter - containerCenter;
+      const target = Math.max(0, container.scrollLeft + delta);
+      container.scrollTo({ left: Math.round(target), behavior });
+    }
+  
+    function findClosestIndex(container, slides) {
+      const containerRect = container.getBoundingClientRect();
+      const center = containerRect.left + container.clientWidth/2;
+      let best = { idx: 0, dist: Infinity };
+      slides.forEach((s, i) => {
+        const r = s.getBoundingClientRect();
+        const c = r.left + r.width/2;
+        const d = Math.abs(c - center);
+        if (d < best.dist) { best = { idx: i, dist: d }; }
+      });
+      return best.idx;
+    }
+  
+    function setActiveClass(container, slides) {
+      const idx = findClosestIndex(container, slides);
+      slides.forEach((s,i) => {
+        if (i === idx) s.classList.add('active-slide'); else s.classList.remove('active-slide');
+      });
+      return idx;
+    }
+  
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  
+    // Main init
+    const container = findContainer();
+    if (!container) return; // nothing to do
+  
+    // make container focusable for keyboard navigation
+    if (!container.hasAttribute('tabindex')) container.setAttribute('tabindex', '0');
+  
+    const slides = getSlides(container);
+    if (!slides.length) return;
+  
+    const btns = findButtons(container);
+  
+    // Prev/Next button handlers
+    const goToIndex = (i) => {
+      const idx = clamp(i, 0, slides.length - 1);
+      scrollToCenter(container, slides[idx]);
+    };
+  
+    if (btns.prev) {
+      btns.prev.addEventListener('click', (e) => {
+        e.preventDefault();
+        const cur = findClosestIndex(container, slides);
+        goToIndex(cur - 1);
+      });
+    }
+    if (btns.next) {
+      btns.next.addEventListener('click', (e) => {
+        e.preventDefault();
+        const cur = findClosestIndex(container, slides);
+        goToIndex(cur + 1);
+      });
+    }
+  
+    // keyboard navigation when focused
+    container.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const cur = findClosestIndex(container, slides);
+        goToIndex(cur - 1);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        const cur = findClosestIndex(container, slides);
+        goToIndex(cur + 1);
+      }
+    });
+  
+    // update active class on scroll (debounced via rAF)
+    let rafId = null;
+    container.addEventListener('scroll', () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        setActiveClass(container, slides);
+        rafId = null;
+      });
+    }, { passive: true });
+  
+    // initial active mark (small timeout to let layout settle)
+    setTimeout(() => {
+      setActiveClass(container, slides);
+    }, 60);
+  
+    // pointer drag (touch-friendly)
+    (function enableDrag() {
+      let isDown = false, startX = 0, startScroll = 0, pointerId = null;
+      container.addEventListener('pointerdown', (e) => {
+        // only left button or touch
+        if (e.button && e.button !== 0) return;
+        isDown = true;
+        pointerId = e.pointerId;
+        container.setPointerCapture(pointerId);
+        startX = e.clientX;
+        startScroll = container.scrollLeft;
+        container.classList.add('dragging');
+      });
+      container.addEventListener('pointermove', (e) => {
+        if (!isDown) return;
+        const dx = e.clientX - startX;
+        container.scrollLeft = startScroll - dx;
+      });
+      const release = (e) => {
+        if (!isDown) return;
+        isDown = false;
+        try { container.releasePointerCapture(pointerId); } catch(_) {}
+        container.classList.remove('dragging');
+        // snap to closest
+        setTimeout(() => setActiveClass(container, slides) && scrollToCenter(container, slides[findClosestIndex(container, slides)], 'smooth'), 80);
+      };
+      container.addEventListener('pointerup', release);
+      container.addEventListener('pointercancel', release);
+      container.addEventListener('pointerleave', release);
+    })();
+  
+    // Make Prev/Next auto-hide if not present or not needed
+    function toggleButtonsVisibility() {
+      // if buttons exist but slides fit fully, hide them
+      const totalWidth = slides.reduce((sum, s) => sum + s.getBoundingClientRect().width, 0);
+      if (btns.prev) btns.prev.style.display = totalWidth <= container.clientWidth ? 'none' : '';
+      if (btns.next) btns.next.style.display = totalWidth <= container.clientWidth ? 'none' : '';
+    }
+    window.addEventListener('resize', () => {
+      toggleButtonsVisibility();
+      // re-center current active
+      const cur = findClosestIndex(container, slides);
+      scrollToCenter(container, slides[cur], 'auto');
+    });
+    toggleButtonsVisibility();
+  
+    // expose helper for debugging
+    window.OOTB_nativeSwipe = { container, slides, goToIndex: (i) => goToIndex(i) };
+  
+  })();
+  
