@@ -24,8 +24,8 @@ function initScrollAnimations() {
                 entry.target.classList.add('revealed');
                 
                 // Trigger counter animations when stats section comes into view
-                if (entry.target.classList.contains('hero-stats')) {
-                    animateCounters();
+                if (entry.target.classList.contains('hero-stats') || entry.target.classList.contains('hero-stats-inline')) {
+                    animateCounters(entry.target);
                 }
 
                 // Start typing when subtitle comes into view
@@ -37,7 +37,7 @@ function initScrollAnimations() {
     }, observerOptions);
 
     // Observe reveal elements and subtitles
-    document.querySelectorAll('.reveal-up, .reveal-left, .reveal-right, .section-subtitle').forEach(el => {
+    document.querySelectorAll('.reveal-up, .reveal-left, .reveal-right, .section-subtitle, .hero-stats-inline, .hero-stats').forEach(el => {
         observer.observe(el);
     });
 }
@@ -84,37 +84,33 @@ function initNavbar() {
 
 // Animated counter for statistics
 function initCounterAnimations() {
-    let countersAnimated = false;
-    
-    window.animateCounters = function() {
-        if (countersAnimated) return;
-        countersAnimated = true;
-        
-        const counters = document.querySelectorAll('.stat-number');
+    window.animateCounters = function(rootEl) {
+        const scope = rootEl || document;
+        const counters = scope.querySelectorAll ? scope.querySelectorAll('.stat-number') : document.querySelectorAll('.stat-number');
         counters.forEach(counter => {
-            const target = parseFloat(counter.getAttribute('data-target'));
-            const isDecimal = target % 1 !== 0;
+            const targetAttr = counter.getAttribute('data-target');
+            if (!targetAttr) return;
+            const target = parseFloat(targetAttr);
+            const decimals = parseInt(counter.getAttribute('data-decimals') || (target % 1 !== 0 ? '1' : '0'), 10);
+            const prefix = counter.getAttribute('data-prefix') || '';
+            const suffix = counter.getAttribute('data-suffix') || '';
+            if (counter.dataset.counting === 'true') return;
+            counter.dataset.counting = 'true';
             let current = 0;
-            const increment = target / 100;
+            const steps = 100;
+            const increment = target / steps;
             
             const updateCounter = () => {
                 if (current < target) {
                     current += increment;
                     if (current > target) current = target;
-                    
-                    if (isDecimal) {
-                        counter.textContent = current.toFixed(1);
-                    } else {
-                        counter.textContent = Math.floor(current);
-                    }
+                    const value = decimals > 0 ? current.toFixed(decimals) : Math.floor(current).toString();
+                    counter.textContent = `${prefix}${value}${suffix}`;
                     
                     requestAnimationFrame(updateCounter);
                 } else {
-                    if (isDecimal) {
-                        counter.textContent = target.toFixed(1);
-                    } else {
-                        counter.textContent = target;
-                    }
+                    const value = decimals > 0 ? target.toFixed(decimals) : Math.round(target).toString();
+                    counter.textContent = `${prefix}${value}${suffix}`;
                 }
             };
             

@@ -1578,11 +1578,7 @@ h1, h2, h3, h4, h5, h6 {
     .marquee-section { padding: 0.9rem 0; }
     .marquee-item { letter-spacing: 1.5px; }
 }
-/* Industry Pages Styles */
-.industry-hero {
-    background: linear-gradient(135deg, rgba(17, 24, 39, 0.8), rgba(31, 41, 55, 0.6));
-    position: relative;
-}
+
 
 .industry-hero.gaming-hero::before {
     content: '';
@@ -2086,4 +2082,21 @@ h1, h2, h3, h4, h5, h6 {
     .feature-tag {
         width: fit-content;
     }
+}
+
+/* Accent word reveal animation for industry hero titles */
+.accent-reveal {
+    opacity: 0;
+    transform: translateX(-16px);
+    display: inline-block;
+}
+
+.reveal-up.revealed .accent-reveal {
+    animation: accentSlideIn 0.7s ease-out forwards;
+    animation-delay: 0.1s;
+}
+
+@keyframes accentSlideIn {
+    0% { opacity: 0; transform: translateX(-56px); }
+    100% { opacity: 1; transform: translateX(0); }
 }
