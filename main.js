@@ -1,7 +1,5 @@
-// OOTB Media - Interactive JavaScript
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize all components
     initScrollAnimations();
     initNavbar();
     initCounterAnimations();
@@ -9,9 +7,9 @@ document.addEventListener('DOMContentLoaded', function() {
     initCampaignBuilder();
     initContactForm();
     initIndustryInteractions();
+    initPerformanceLoop();
 });
 
-// Scroll-triggered animations using Intersection Observer
 function initScrollAnimations() {
     const observerOptions = {
         threshold: 0.1,
@@ -23,17 +21,14 @@ function initScrollAnimations() {
             if (entry.isIntersecting) {
                 entry.target.classList.add('revealed');
                 
-                // Trigger counter animations when stats section comes into view
                 if (entry.target.classList.contains('hero-stats') || entry.target.classList.contains('hero-stats-inline')) {
                     animateCounters(entry.target);
                 }
 
-                // Start typing when subtitle comes into view
                 if (entry.target.classList.contains('section-subtitle')) {
                     startTypingSubtitle(entry.target);
                 }
 
-                // Animate metric bars when visible
                 if (entry.target.classList.contains('metric-bars')) {
                     entry.target.querySelectorAll('.bar').forEach(bar => {
                         const value = parseInt(bar.getAttribute('data-value') || '0', 10);
@@ -481,6 +476,119 @@ function lazyLoadBackgrounds() {
 // Initialize lazy loading
 lazyLoadBackgrounds();
 
+// Performance Loop (elliptical chart)
+function initPerformanceLoop() {
+    const svg = document.querySelector('.ellipse-svg');
+    const path = document.getElementById('loopPath');
+    const runner = document.getElementById('loopRunner');
+    const runnerGlow = document.getElementById('loopRunnerGlow');
+    const markersGroup = document.getElementById('loopMarkers');
+    const tooltip = document.getElementById('ellipseTooltip');
+    if (!svg || !path || !runner || !runnerGlow || !markersGroup || !tooltip) return;
+
+    const phases = [
+        { key: 'research', t: 0.02, title: 'Research', text: 'Market sizing, intent mapping, competitors, clustering.' },
+        { key: 'launch',   t: 0.26, title: 'Launch',   text: 'Initial structures, fast keyword/creative iteration.' },
+        { key: 'optimize', t: 0.52, title: 'Optimize', text: 'Bids, audiences, speed, CRO. Raise CVR, lower CPA.' },
+        { key: 'scale',    t: 0.78, title: 'Scale',    text: 'Budget ramp with ROAS guardrails, LTV-based growth.' }
+    ];
+
+    // Utility: get point along path by t [0..1]
+    const total = path.getTotalLength();
+    function pointAt(t) {
+        const p = path.getPointAtLength(Math.max(0, Math.min(1, t)) * total);
+        return { x: p.x, y: p.y };
+    }
+
+    // Create markers
+    phases.forEach((phase) => {
+        const pos = pointAt(phase.t);
+        const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        c.setAttribute('cx', pos.x);
+        c.setAttribute('cy', pos.y);
+        c.setAttribute('r', '8');
+        c.setAttribute('class', `loop-marker ${phase.key}`);
+        c.setAttribute('tabindex', '0');
+        c.setAttribute('role', 'img');
+        c.setAttribute('aria-label', `${phase.title}: ${phase.text}`);
+        markersGroup.appendChild(c);
+    });
+
+    // Tooltip helpers
+    function showTooltip(x, y, title, text, colorVar) {
+        tooltip.innerHTML = `<strong style="color:${colorVar}">${title}</strong><div>${text}</div>`;
+        tooltip.style.left = `${x}px`;
+        tooltip.style.top = `${y}px`;
+        tooltip.setAttribute('aria-hidden', 'false');
+    }
+    function hideTooltip() { tooltip.setAttribute('aria-hidden', 'true'); }
+
+    const colorByKey = {
+        research: getComputedStyle(document.documentElement).getPropertyValue('--accent-green') || '#10b981',
+        launch: getComputedStyle(document.documentElement).getPropertyValue('--accent-blue') || '#3b82f6',
+        optimize: getComputedStyle(document.documentElement).getPropertyValue('--accent-warm') || '#f59e0b',
+        scale: '#8b5cf6'
+    };
+
+    // Marker interactions
+    markersGroup.addEventListener('pointerover', (e) => {
+        const target = e.target.closest('.loop-marker');
+        if (!target) return;
+        const key = [...target.classList].find(c => ['research','launch','optimize','scale'].includes(c));
+        const phase = phases.find(p => p.key === key);
+        if (!phase) return;
+        const rect = svg.getBoundingClientRect();
+        const x = parseFloat(target.getAttribute('cx')) + rect.left;
+        const y = parseFloat(target.getAttribute('cy')) + rect.top;
+        showTooltip(x, y, phase.title, phase.text, colorByKey[key]);
+    });
+    markersGroup.addEventListener('pointerout', hideTooltip);
+    markersGroup.addEventListener('click', (e) => {
+        const target = e.target.closest('.loop-marker');
+        if (!target) return;
+        const key = [...target.classList].find(c => ['research','launch','optimize','scale'].includes(c));
+        const phase = phases.find(p => p.key === key);
+        if (!phase) return;
+        target.focus();
+        const rect = svg.getBoundingClientRect();
+        const x = parseFloat(target.getAttribute('cx')) + rect.left;
+        const y = parseFloat(target.getAttribute('cy')) + rect.top;
+        showTooltip(x, y, phase.title, phase.text, colorByKey[key]);
+        setTimeout(hideTooltip, 2000);
+    });
+
+    // Animate runner along path on reveal
+    function animateRunner() {
+        let t = 0;
+        const speed = 0.0022; // controls lap time
+        function tick() {
+            t += speed;
+            if (t > 1) t = 0;
+            const pos = pointAt(t);
+            runner.setAttribute('cx', pos.x);
+            runner.setAttribute('cy', pos.y);
+            runnerGlow.setAttribute('cx', pos.x);
+            runnerGlow.setAttribute('cy', pos.y);
+            runnerGlow.style.transform = `translateZ(0)`;
+            requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+    }
+
+    // Start when section is visible
+    const section = document.getElementById('performance-loop');
+    if (!section) return;
+    const io = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animateRunner();
+                io.disconnect();
+            }
+        });
+    }, { threshold: 0.2 });
+    io.observe(section);
+}
+
 // Add scroll-to-top functionality
 function addScrollToTop() {
     const scrollBtn = document.createElement('button');
@@ -521,42 +629,21 @@ function addScrollToTop() {
     });
 }
 
-// Add scroll to top button
 addScrollToTop();
 
-// Console welcome message
-console.log(`
-🚀 OOTB Media Website Loaded Successfully!
-    
-✨ Features Active:
-   • Scroll-triggered animations
-   • Interactive campaign builder
-   • Form validation & email generation
-   • Micro-interactions & hover effects
-   • Performance optimizations
-    
-📧 Contact: ootbmedia0@gmail.com
-📱 Telegram: @ootb25
-    
-Built with ❤️ for premium SEM & PPC campaigns
-`);
 
-// Error handling and fallbacks
 window.addEventListener('error', (e) => {
     console.warn('OOTB Media: Non-critical error caught:', e.message);
 });
 
-// Ensure all interactive elements are accessible
 document.querySelectorAll('button, .btn, .nav-link').forEach(el => {
     if (!el.getAttribute('aria-label') && !el.textContent.trim()) {
         el.setAttribute('aria-label', 'Interactive element');
     }
 });
 
-// Add keyboard navigation support
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-        // Close any open modals
         const openModal = document.querySelector('.modal.show');
         if (openModal) {
             bootstrap.Modal.getInstance(openModal).hide();
@@ -564,17 +651,11 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Initialize theme preference (future enhancement)
 const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
 if (prefersDarkMode) {
     document.body.classList.add('theme-preference-dark');
 }
-/* ------------------------------
-  Lightweight non-destructive swiper for Industries
-  - DOES NOT rewrap/move DOM nodes (preserves images)
-  - Uses existing Prev/Next buttons if present
-  - Adds drag-to-scroll and centered snapping
---------------------------------*/
+
 (function initNativeSwiper() {
     function $(sel, ctx=document) { return ctx.querySelector(sel); }
     function $all(sel, ctx=document) { return Array.from(ctx.querySelectorAll(sel)); }
@@ -587,7 +668,6 @@ if (prefersDarkMode) {
     }
   
     function findButtons(container) {
-      // try common class names, fallbacks
       return {
         prev: container.querySelector('.swipe-prev') || document.querySelector('.swipe-prev') || document.querySelector('.swiper-button-prev') || document.querySelector('.swipe-prev-btn'),
         next: container.querySelector('.swipe-next') || document.querySelector('.swipe-next') || document.querySelector('.swiper-button-next') || document.querySelector('.swipe-next-btn')
@@ -595,16 +675,13 @@ if (prefersDarkMode) {
     }
   
     function getSlides(container) {
-      // choose only element children that look like cards
-      const children = Array.from(container.children).filter(n => n.nodeType === 1);
-      // Filter out controls/pagination elements (common classes)
+     const children = Array.from(container.children).filter(n => n.nodeType === 1);
       return children.filter(ch => !ch.classList.contains('swipe-controls') && !ch.classList.contains('swiper-pagination') && !ch.classList.contains('swiper-button-next') && !ch.classList.contains('swiper-button-prev'));
     }
   
     function scrollToCenter(container, el, behavior = 'smooth') {
       const containerRect = container.getBoundingClientRect();
       const elRect = el.getBoundingClientRect();
-      // center position relative to container
       const elCenter = elRect.left + elRect.width/2;
       const containerCenter = containerRect.left + container.clientWidth/2;
       const delta = elCenter - containerCenter;
@@ -635,11 +712,9 @@ if (prefersDarkMode) {
   
     function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
   
-    // Main init
     const container = findContainer();
-    if (!container) return; // nothing to do
+    if (!container) return;
   
-    // make container focusable for keyboard navigation
     if (!container.hasAttribute('tabindex')) container.setAttribute('tabindex', '0');
   
     const slides = getSlides(container);
@@ -647,7 +722,6 @@ if (prefersDarkMode) {
   
     const btns = findButtons(container);
   
-    // Prev/Next button handlers
     const goToIndex = (i) => {
       const idx = clamp(i, 0, slides.length - 1);
       scrollToCenter(container, slides[idx]);
@@ -681,7 +755,6 @@ if (prefersDarkMode) {
       }
     });
   
-    // update active class on scroll (debounced via rAF)
     let rafId = null;
     container.addEventListener('scroll', () => {
       if (rafId) cancelAnimationFrame(rafId);
@@ -691,16 +764,13 @@ if (prefersDarkMode) {
       });
     }, { passive: true });
   
-    // initial active mark (small timeout to let layout settle)
     setTimeout(() => {
       setActiveClass(container, slides);
     }, 60);
   
-    // pointer drag (touch-friendly)
     (function enableDrag() {
       let isDown = false, startX = 0, startScroll = 0, pointerId = null;
       container.addEventListener('pointerdown', (e) => {
-        // only left button or touch
         if (e.button && e.button !== 0) return;
         isDown = true;
         pointerId = e.pointerId;
@@ -719,7 +789,6 @@ if (prefersDarkMode) {
         isDown = false;
         try { container.releasePointerCapture(pointerId); } catch(_) {}
         container.classList.remove('dragging');
-        // snap to closest
         setTimeout(() => setActiveClass(container, slides) && scrollToCenter(container, slides[findClosestIndex(container, slides)], 'smooth'), 80);
       };
       container.addEventListener('pointerup', release);
@@ -727,22 +796,18 @@ if (prefersDarkMode) {
       container.addEventListener('pointerleave', release);
     })();
   
-    // Make Prev/Next auto-hide if not present or not needed
     function toggleButtonsVisibility() {
-      // if buttons exist but slides fit fully, hide them
       const totalWidth = slides.reduce((sum, s) => sum + s.getBoundingClientRect().width, 0);
       if (btns.prev) btns.prev.style.display = totalWidth <= container.clientWidth ? 'none' : '';
       if (btns.next) btns.next.style.display = totalWidth <= container.clientWidth ? 'none' : '';
     }
     window.addEventListener('resize', () => {
       toggleButtonsVisibility();
-      // re-center current active
       const cur = findClosestIndex(container, slides);
       scrollToCenter(container, slides[cur], 'auto');
     });
     toggleButtonsVisibility();
   
-    // expose helper for debugging
     window.OOTB_nativeSwipe = { container, slides, goToIndex: (i) => goToIndex(i) };
   
   })();
