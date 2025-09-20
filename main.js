@@ -44,13 +44,11 @@ function initScrollAnimations() {
         });
     }, observerOptions);
 
-    // Observe reveal elements and subtitles
     document.querySelectorAll('.reveal-up, .reveal-left, .reveal-right, .reveal-slide-left, .reveal-slide-right, .reveal-fade, .section-subtitle, .hero-stats-inline, .hero-stats, .metric-bars').forEach(el => {
         observer.observe(el);
     });
 }
 
-// Navbar scroll effects
 function initNavbar() {
     const navbar = document.getElementById('mainNav');
     let lastScrollY = window.pageYOffset || document.documentElement.scrollTop;
@@ -58,21 +56,17 @@ function initNavbar() {
     const handleScroll = () => {
         const currentY = window.pageYOffset || document.documentElement.scrollTop;
 
-        // Maintain existing shadow/background behavior
         if (currentY > 100) {
             navbar.classList.add('scrolled');
         } else {
             navbar.classList.remove('scrolled');
         }
 
-        // Desktop-only hide/show behavior
         const isDesktop = window.innerWidth >= 992;
         if (isDesktop) {
             if (currentY > lastScrollY && currentY > 150) {
-                // scrolling down
                 navbar.classList.add('navbar-hidden');
             } else {
-                // scrolling up
                 navbar.classList.remove('navbar-hidden');
             }
         } else {
@@ -90,7 +84,6 @@ function initNavbar() {
     });
 }
 
-// Animated counter for statistics
 function initCounterAnimations() {
     window.animateCounters = function(rootEl) {
         const scope = rootEl || document;
@@ -127,7 +120,6 @@ function initCounterAnimations() {
     };
 }
 
-// Animated typing for section subtitles
 function initTypingSubtitles() {
     const subtitles = document.querySelectorAll('.section-subtitle');
     subtitles.forEach((subtitle) => {
@@ -163,12 +155,10 @@ function startTypingSubtitle(el) {
     typeStep();
 }
 
-// Campaign Builder Interactive Preview
 function initCampaignBuilder() {
     const goalButtons = document.querySelectorAll('.goal-btn');
     const industrySelect = document.getElementById('industry-select');
     
-    // KPI data based on goal and industry
     const kpiData = {
         awareness: {
             gaming: { roas: '1.8x', ctr: '2.4%', cpa: '$18', conversion: '3.2%' },
@@ -207,7 +197,6 @@ function initCampaignBuilder() {
             ? kpiData[goal][selectedIndustry] 
             : kpiData.conversion.gaming;
         
-        // Animate KPI updates
         animateKPIUpdate('kpi-roas', data.roas);
         animateKPIUpdate('kpi-ctr', data.ctr);
         animateKPIUpdate('kpi-cpa', data.cpa);
@@ -228,7 +217,6 @@ function initCampaignBuilder() {
         }, 150);
     }
 
-    // Goal button interactions
     goalButtons.forEach(button => {
         button.addEventListener('click', () => {
             goalButtons.forEach(btn => btn.classList.remove('active'));
@@ -237,16 +225,13 @@ function initCampaignBuilder() {
         });
     });
 
-    // Industry select change
     if (industrySelect) {
         industrySelect.addEventListener('change', updateKPIs);
     }
 
-    // Initialize with default values
     setTimeout(updateKPIs, 500);
 }
 
-// Contact form handling
 function initContactForm() {
     const contactForm = document.getElementById('contactForm');
     if (!contactForm) return;
@@ -263,12 +248,10 @@ function initContactForm() {
         const form = contactForm;
         let isValid = true;
         
-        // Clear previous validation states
         form.querySelectorAll('.form-control, .form-select').forEach(input => {
             input.classList.remove('is-invalid', 'is-valid');
         });
 
-        // Validate required fields
         const requiredFields = [
             'firstName', 'lastName', 'email', 'industry', 'message'
         ];
@@ -283,7 +266,6 @@ function initContactForm() {
             }
         });
 
-        // Validate email format
         const emailField = form.querySelector('[name="email"]');
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (emailField && emailField.value && !emailRegex.test(emailField.value)) {
@@ -292,7 +274,6 @@ function initContactForm() {
             isValid = false;
         }
 
-        // Validate services checkboxes
         const serviceCheckboxes = form.querySelectorAll('[name="services"]:checked');
         const servicesFeedback = document.getElementById('services-feedback');
         if (serviceCheckboxes.length === 0) {
@@ -302,7 +283,6 @@ function initContactForm() {
             servicesFeedback.style.display = 'none';
         }
 
-        // Validate privacy checkbox
         const privacyCheckbox = form.querySelector('[name="privacy"]');
         if (privacyCheckbox && !privacyCheckbox.checked) {
             privacyCheckbox.classList.add('is-invalid');
@@ -319,16 +299,13 @@ function initContactForm() {
         const services = Array.from(contactForm.querySelectorAll('[name="services"]:checked'))
             .map(cb => cb.value);
         
-        // Create email payload
         const emailContent = createEmailPayload(formData, services);
         
-        // Show modal
         const modal = new bootstrap.Modal(document.getElementById('successModal'));
         document.getElementById('emailPayload').textContent = emailContent;
         
         modal.show();
         
-        // Reset form
         contactForm.reset();
         contactForm.querySelectorAll('.form-control, .form-select').forEach(input => {
             input.classList.remove('is-invalid', 'is-valid');
@@ -357,7 +334,6 @@ Timestamp: ${new Date().toLocaleString()}`;
     }
 }
 
-// Industry card interactions
 function initIndustryInteractions() {
     const industryCards = document.querySelectorAll('.industry-card');
     
@@ -365,10 +341,8 @@ function initIndustryInteractions() {
         card.addEventListener('mouseenter', () => {
             const industry = card.getAttribute('data-industry');
             
-            // Add glow effect
             card.style.boxShadow = 'var(--shadow-xl), 0 0 30px rgba(74, 222, 128, 0.3)';
             
-            // Subtle scale animation
             card.style.transform = 'translateY(-10px) scale(1.02)';
         });
         
@@ -378,7 +352,6 @@ function initIndustryInteractions() {
         });
     });
 
-    // Social link hover effects
     const socialLinks = document.querySelectorAll('.social-link');
     socialLinks.forEach(link => {
         link.addEventListener('mouseenter', () => {
@@ -391,23 +364,26 @@ function initIndustryInteractions() {
     });
 }
 
-// Smooth scrolling for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
+        const href = (this.getAttribute('href') || '').trim();
+        if (!href || href === '#') {
+            return; 
+        }
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
+        let target;
+        try {
+            target = document.querySelector(href);
+        } catch (_) {
+            return;
+        }
         if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     });
 });
 
-// Add loading states and micro-interactions
 function addMicroInteractions() {
-    // Button hover effects with ripple
     document.querySelectorAll('.btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             const ripple = document.createElement('span');
@@ -427,13 +403,10 @@ function addMicroInteractions() {
         });
     });
 
-    // Hover tilt effect removed per request
 }
 
-// Initialize micro-interactions after DOM is loaded
 setTimeout(addMicroInteractions, 100);
 
-// Add CSS for ripple effect
 const rippleCSS = `
 .ripple {
     position: absolute;
@@ -456,7 +429,6 @@ const style = document.createElement('style');
 style.textContent = rippleCSS;
 document.head.appendChild(style);
 
-// Performance optimization - lazy load background images
 function lazyLoadBackgrounds() {
     const backgrounds = document.querySelectorAll('[data-bg]');
     const imageObserver = new IntersectionObserver((entries) => {
@@ -473,10 +445,8 @@ function lazyLoadBackgrounds() {
     backgrounds.forEach(bg => imageObserver.observe(bg));
 }
 
-// Initialize lazy loading
 lazyLoadBackgrounds();
 
-// Performance Loop (elliptical chart)
 function initPerformanceLoop() {
     const svg = document.querySelector('.ellipse-svg');
     const path = document.getElementById('loopPath');
@@ -493,14 +463,12 @@ function initPerformanceLoop() {
         { key: 'scale',    t: 0.78, title: 'Scale',    text: 'Budget ramp with ROAS guardrails, LTV-based growth.' }
     ];
 
-    // Utility: get point along path by t [0..1]
     const total = path.getTotalLength();
     function pointAt(t) {
         const p = path.getPointAtLength(Math.max(0, Math.min(1, t)) * total);
         return { x: p.x, y: p.y };
     }
 
-    // Create markers
     phases.forEach((phase) => {
         const pos = pointAt(phase.t);
         const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -514,7 +482,6 @@ function initPerformanceLoop() {
         markersGroup.appendChild(c);
     });
 
-    // Tooltip helpers
     function showTooltip(x, y, title, text, colorVar) {
         tooltip.innerHTML = `<strong style="color:${colorVar}">${title}</strong><div>${text}</div>`;
         tooltip.style.left = `${x}px`;
@@ -530,7 +497,6 @@ function initPerformanceLoop() {
         scale: '#8b5cf6'
     };
 
-    // Marker interactions
     markersGroup.addEventListener('pointerover', (e) => {
         const target = e.target.closest('.loop-marker');
         if (!target) return;
@@ -557,10 +523,9 @@ function initPerformanceLoop() {
         setTimeout(hideTooltip, 2000);
     });
 
-    // Animate runner along path on reveal
     function animateRunner() {
         let t = 0;
-        const speed = 0.0022; // controls lap time
+        const speed = 0.0022;
         function tick() {
             t += speed;
             if (t > 1) t = 0;
@@ -575,7 +540,6 @@ function initPerformanceLoop() {
         requestAnimationFrame(tick);
     }
 
-    // Start when section is visible
     const section = document.getElementById('performance-loop');
     if (!section) return;
     const io = new IntersectionObserver((entries) => {
@@ -589,7 +553,6 @@ function initPerformanceLoop() {
     io.observe(section);
 }
 
-// Add scroll-to-top functionality
 function addScrollToTop() {
     const scrollBtn = document.createElement('button');
     scrollBtn.innerHTML = '<i class="fas fa-arrow-up"></i>';
