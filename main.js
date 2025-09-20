@@ -32,12 +32,25 @@ function initScrollAnimations() {
                 if (entry.target.classList.contains('section-subtitle')) {
                     startTypingSubtitle(entry.target);
                 }
+
+                // Animate metric bars when visible
+                if (entry.target.classList.contains('metric-bars')) {
+                    entry.target.querySelectorAll('.bar').forEach(bar => {
+                        const value = parseInt(bar.getAttribute('data-value') || '0', 10);
+                        const fill = bar.querySelector('.bar-fill');
+                        if (fill) {
+                            requestAnimationFrame(() => {
+                                fill.style.width = Math.max(0, Math.min(100, value)) + '%';
+                            });
+                        }
+                    });
+                }
             }
         });
     }, observerOptions);
 
     // Observe reveal elements and subtitles
-    document.querySelectorAll('.reveal-up, .reveal-left, .reveal-right, .section-subtitle, .hero-stats-inline, .hero-stats').forEach(el => {
+    document.querySelectorAll('.reveal-up, .reveal-left, .reveal-right, .reveal-slide-left, .reveal-slide-right, .reveal-fade, .section-subtitle, .hero-stats-inline, .hero-stats, .metric-bars').forEach(el => {
         observer.observe(el);
     });
 }
@@ -317,14 +330,6 @@ function initContactForm() {
         // Show modal
         const modal = new bootstrap.Modal(document.getElementById('successModal'));
         document.getElementById('emailPayload').textContent = emailContent;
-        
-        // Setup email client button
-        const emailButton = document.getElementById('openEmailClient');
-        emailButton.onclick = () => {
-            const subject = encodeURIComponent(`Campaign Inquiry from ${formData.get('firstName')} ${formData.get('lastName')}`);
-            const body = encodeURIComponent(emailContent);
-            window.location.href = `mailto:ootbmedia0@gmail.com?subject=${subject}&body=${body}`;
-        };
         
         modal.show();
         

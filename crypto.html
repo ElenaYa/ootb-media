@@ -10,6 +10,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
+    <link rel="icon" href="img/favicon.png" type="image/png">
+    
 </head>
 <body>
     <!-- SVG Background -->
@@ -294,6 +296,36 @@
             </div>
         </div>
     </section>
+       <!-- Crypto KPI Snapshot -->
+       <section class="metric-section" id="crypto-kpis">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-10 mx-auto">
+                    <div class="metric-header reveal-up text-center">
+                        <h2 class="section-title">Crypto <span class="text-warm-accent">KPI Snapshot</span></h2>
+                        <p class="section-subtitle">Key growth indicators for blockchain projects</p>
+                    </div>
+                    <div class="metric-bars reveal-up">
+                        <div class="bar" data-value="68">
+                            <div class="bar-label">KYC Completion</div>
+                            <div class="bar-track"><div class="bar-fill accent-warm"></div></div>
+                            <div class="bar-value">68%</div>
+                        </div>
+                        <div class="bar" data-value="54">
+                            <div class="bar-label">First Trade Rate</div>
+                            <div class="bar-track"><div class="bar-fill accent-blue"></div></div>
+                            <div class="bar-value">54%</div>
+                        </div>
+                        <div class="bar" data-value="72">
+                            <div class="bar-label">Community Growth</div>
+                            <div class="bar-track"><div class="bar-fill accent-green"></div></div>
+                            <div class="bar-value">72%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Crypto Services -->
     <section class="py-5" id="services">
@@ -308,12 +340,12 @@
             </div>
             <div class="row">
                 <div class="col-lg-4 mb-4">
-                    <div class="service-card reveal-up">
-                        <div class="service-icon">
-                            <i class="fas fa-users text-warm-accent"></i>
+                    <div class="process-card reveal-up" style="--pcolor: var(--accent-warm);">
+                        <div class="process-icon">
+                            <i class="fas fa-users"></i>
                         </div>
-                        <h4>Community Building</h4>
-                        <p>Strategic campaigns to build engaged crypto communities across Discord, Telegram, and social platforms.</p>
+                        <h6 class="process-title">Community Building</h6>
+                        <p class="process-text">Strategic campaigns to build engaged crypto communities across Discord, Telegram, and social platforms.</p>
                         <div class="service-features">
                             <span class="feature-tag">Discord Growth</span>
                             <span class="feature-tag">Telegram Marketing</span>
@@ -323,12 +355,12 @@
                     </div>
                 </div>
                 <div class="col-lg-4 mb-4">
-                    <div class="service-card reveal-up" style="animation-delay: 0.1s;">
-                        <div class="service-icon">
-                            <i class="fas fa-rocket text-accent"></i>
+                    <div class="process-card reveal-up" style="animation-delay: 0.1s; --pcolor: var(--accent-warm);">
+                        <div class="process-icon">
+                            <i class="fas fa-rocket"></i>
                         </div>
-                        <h4>Token Launch Marketing</h4>
-                        <p>End-to-end launch campaigns for new tokens, including pre-launch buzz, IDO promotion, and post-launch adoption.</p>
+                        <h6 class="process-title">Token Launch Marketing</h6>
+                        <p class="process-text">End-to-end launch campaigns for new tokens, including pre-launch buzz, IDO promotion, and post-launch adoption.</p>
                         <div class="service-features">
                             <span class="feature-tag">Pre-launch Hype</span>
                             <span class="feature-tag">IDO Promotion</span>
@@ -338,12 +370,12 @@
                     </div>
                 </div>
                 <div class="col-lg-4 mb-4">
-                    <div class="service-card reveal-up" style="animation-delay: 0.2s;">
-                        <div class="service-icon">
-                            <i class="fas fa-shield-alt text-secondary-accent"></i>
+                    <div class="process-card reveal-up" style="animation-delay: 0.2s; --pcolor: var(--accent-warm);">
+                        <div class="process-icon">
+                            <i class="fas fa-shield-alt"></i>
                         </div>
-                        <h4>Compliance-First Campaigns</h4>
-                        <p>Regulatory-compliant marketing strategies that navigate the evolving crypto advertising landscape safely.</p>
+                        <h6 class="process-title">Compliance-First Campaigns</h6>
+                        <p class="process-text">Regulatory-compliant marketing strategies that navigate the evolving crypto advertising landscape safely.</p>
                         <div class="service-features">
                             <span class="feature-tag">Regulatory Compliance</span>
                             <span class="feature-tag">Platform Approval</span>
@@ -355,6 +387,8 @@
             </div>
         </div>
     </section>
+
+ 
 
     <!-- CTA Section -->
     <section class="py-5 bg-light" id="cta">
