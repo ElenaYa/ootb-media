@@ -394,6 +394,61 @@ h1, h2, h3, h4, h5, h6 {
     border: 1px solid transparent;
 }
 
+/* General info block for services */
+.service-meta {
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-light);
+    background: var(--bg-primary);
+    border-radius: 12px;
+}
+
+.service-meta h6 {
+    margin: 0 0 0.25rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.service-meta p {
+    margin: 0 0 0.25rem;
+    color: var(--text-muted);
+}
+
+.service-meta ul {
+    margin: 0;
+    padding-left: 1.1rem;
+}
+
+.service-meta li {
+    margin: 0.15rem 0;
+}
+
+.platform-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.platform-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    padding: 0.35rem 0.6rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-light);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.platform-badge i { line-height: 1; }
+.platform-badge.meta i { color: #1877f2; }
+.platform-badge.tiktok i { color: #111827; }
+.platform-badge.snapchat i { color: #fffc00; }
+.platform-badge.google i { color: #ea4335; }
+
 .service-card:hover {
     transform: translateY(-8px);
     box-shadow: var(--shadow-xl);
