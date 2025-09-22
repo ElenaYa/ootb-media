@@ -99,17 +99,6 @@ h1, h2, h3, h4, h5, h6 {
         top: auto;
         transform: none;
     }
-
-    /* Show inline Telegram in header on mobile/tablets */
-    .navbar > .container .floating-telegram {
-        display: flex;
-        position: static;
-        margin: 0;
-    }
-    .navbar > .container .telegram-btn {
-        width: 48px;
-        height: 48px;
-    }
 }
 
 .navbar {
@@ -190,8 +179,8 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--text-muted);
     margin-bottom: 2rem;
     max-width: 600px;
-    margin-left: auto;		
-	margin-right: auto;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .trust-line {
@@ -360,8 +349,8 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 1.125rem;
     color: var(--text-muted);
     max-width: 600px;
-    margin-left: auto;		
-	margin-right: auto;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .section-subtitle.typing {
