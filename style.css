@@ -99,6 +99,17 @@ h1, h2, h3, h4, h5, h6 {
         top: auto;
         transform: none;
     }
+
+    /* Show inline Telegram in header on mobile/tablets */
+    .navbar > .container .floating-telegram {
+        display: flex;
+        position: static;
+        margin: 0;
+    }
+    .navbar > .container .telegram-btn {
+        width: 48px;
+        height: 48px;
+    }
 }
 
 .navbar {
