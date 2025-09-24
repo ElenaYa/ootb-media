@@ -16,36 +16,51 @@ function initScrollAnimations() {
         rootMargin: '0px 0px -50px 0px'
     };
 
+    function handleReveal(target) {
+        if (!target) return;
+        if (!target.classList.contains('revealed')) {
+            target.classList.add('revealed');
+        }
+        if (target.classList.contains('hero-stats') || target.classList.contains('hero-stats-inline')) {
+            animateCounters(target);
+        }
+        if (target.classList.contains('section-subtitle')) {
+            startTypingSubtitle(target);
+        }
+        if (target.classList.contains('metric-bars')) {
+            target.querySelectorAll('.bar').forEach(bar => {
+                const value = parseInt(bar.getAttribute('data-value') || '0', 10);
+                const fill = bar.querySelector('.bar-fill');
+                if (fill) {
+                    requestAnimationFrame(() => {
+                        fill.style.width = Math.max(0, Math.min(100, value)) + '%';
+                    });
+                }
+            });
+        }
+    }
+
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                entry.target.classList.add('revealed');
-                
-                if (entry.target.classList.contains('hero-stats') || entry.target.classList.contains('hero-stats-inline')) {
-                    animateCounters(entry.target);
-                }
-
-                if (entry.target.classList.contains('section-subtitle')) {
-                    startTypingSubtitle(entry.target);
-                }
-
-                if (entry.target.classList.contains('metric-bars')) {
-                    entry.target.querySelectorAll('.bar').forEach(bar => {
-                        const value = parseInt(bar.getAttribute('data-value') || '0', 10);
-                        const fill = bar.querySelector('.bar-fill');
-                        if (fill) {
-                            requestAnimationFrame(() => {
-                                fill.style.width = Math.max(0, Math.min(100, value)) + '%';
-                            });
-                        }
-                    });
-                }
+                handleReveal(entry.target);
             }
         });
     }, observerOptions);
 
-    document.querySelectorAll('.reveal-up, .reveal-left, .reveal-right, .reveal-slide-left, .reveal-slide-right, .reveal-fade, .section-subtitle, .hero-stats-inline, .hero-stats, .metric-bars').forEach(el => {
-        observer.observe(el);
+    const revealSelectors = '.reveal-up, .reveal-left, .reveal-right, .reveal-slide-left, .reveal-slide-right, .reveal-fade, .section-subtitle, .hero-stats-inline, .hero-stats, .metric-bars';
+    const revealables = document.querySelectorAll(revealSelectors);
+    revealables.forEach(el => observer.observe(el));
+
+    // Immediately reveal anything already in viewport on load to avoid initial overflow/shift
+    requestAnimationFrame(() => {
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        revealables.forEach(el => {
+            const r = el.getBoundingClientRect();
+            const inView = r.bottom >= 0 && r.right >= 0 && r.top <= vh && r.left <= vw;
+            if (inView) handleReveal(el);
+        });
     });
 }
 
