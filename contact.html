@@ -96,7 +96,7 @@
                     <div class="contact-form-wrapper reveal-up">
                         <div class="row">
                             <div class="col-lg-7">
-                                <form id="contactForm" class="contact-form" novalidate>
+                                <form id="contactForm" class="contact-form" action="send_mail.php" method="post" novalidate>
                                     <div class="row">
                                         <div class="col-md-6 mb-4">
                                             <label for="firstName" class="form-label">First Name *</label>
@@ -132,10 +132,11 @@
                                             <label for="industry" class="form-label">Industry *</label>
                                             <select class="form-select" id="industry" name="industry" required>
                                                 <option value="">Select Your Industry</option>
-                                                <option value="gaming">Gaming</option>
+                            
                                                 <option value="finance">Finance</option>
                                                 <option value="crypto">Crypto</option>
                                                 <option value="realestate">Real Estate</option>
+                                                 <option value="gaming">Gaming</option>
                                                 <option value="other">Other</option>
                                             </select>
                                             <div class="invalid-feedback">

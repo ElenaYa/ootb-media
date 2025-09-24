@@ -251,12 +251,60 @@ function initContactForm() {
     const contactForm = document.getElementById('contactForm');
     if (!contactForm) return;
 
-    contactForm.addEventListener('submit', function(e) {
+    contactForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        if (validateForm()) {
-            showSubmissionModal();
+        if (!validateForm()) return;
+        
+        const submitBtn = contactForm.querySelector('button[type="submit"]');
+        const textEl = submitBtn?.querySelector('.submit-text');
+        const spinnerEl = submitBtn?.querySelector('.submit-spinner');
+        function setLoading(loading) {
+            if (!submitBtn) return;
+            submitBtn.disabled = loading;
+            if (textEl && spinnerEl) {
+                if (loading) { spinnerEl.classList.remove('d-none'); textEl.classList.add('d-none'); }
+                else { spinnerEl.classList.add('d-none'); textEl.classList.remove('d-none'); }
+            }
         }
+        
+        const formData = new FormData(contactForm);
+        setLoading(true);
+        try {
+            const resp = await fetch('send_mail.php', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const isJSON = (resp.headers.get('content-type') || '').includes('application/json');
+            if (!resp.ok) {
+                if (isJSON) {
+                    const data = await resp.json();
+                    alert(data.error || (data.errors && data.errors.join('\n')) || 'Failed to send.');
+                } else {
+                    const txt = await resp.text();
+                    alert('Failed to send.');
+                    console.warn('send_mail.php response:', txt);
+                }
+                setLoading(false);
+                return;
+            }
+            const data = isJSON ? await resp.json() : { success: true, preview: '' };
+            const emailContent = data.preview && typeof data.preview === 'string' ? data.preview : createEmailPayload(formData, Array.from(contactForm.querySelectorAll('[name="services"]:checked')).map(cb => cb.value));
+            const modal = new bootstrap.Modal(document.getElementById('successModal'));
+            document.getElementById('emailPayload').textContent = emailContent;
+            modal.show();
+            contactForm.reset();
+            contactForm.querySelectorAll('.form-control, .form-select').forEach(input => {
+                input.classList.remove('is-invalid', 'is-valid');
+            });
+        } catch (err) {
+            console.warn('Network or server error while sending form:', err);
+            setLoading(false);
+            contactForm.submit();
+            return;
+        }
+        setLoading(false);
     });
 
     function validateForm() {
@@ -309,23 +357,6 @@ function initContactForm() {
         return isValid;
     }
 
-    function showSubmissionModal() {
-        const formData = new FormData(contactForm);
-        const services = Array.from(contactForm.querySelectorAll('[name="services"]:checked'))
-            .map(cb => cb.value);
-        
-        const emailContent = createEmailPayload(formData, services);
-        
-        const modal = new bootstrap.Modal(document.getElementById('successModal'));
-        document.getElementById('emailPayload').textContent = emailContent;
-        
-        modal.show();
-        
-        contactForm.reset();
-        contactForm.querySelectorAll('.form-control, .form-select').forEach(input => {
-            input.classList.remove('is-invalid', 'is-valid');
-        });
-    }
 
     function createEmailPayload(formData, services) {
         return `New Campaign Inquiry - OOTB Media
